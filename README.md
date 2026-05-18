@@ -44,8 +44,6 @@ tests/
 ├── test_auth.py
 └── test_module.py
 
-Código
-
 ---
 
 ## ⚙️ Como Rodar o Projeto
