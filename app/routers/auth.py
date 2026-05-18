@@ -14,6 +14,8 @@ from app.models.refresh_token import RefreshToken
 from datetime import datetime, timedelta
 from app.core.security import criar_refresh_token
 
+from fastapi import HTTPException
+
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -37,10 +39,10 @@ def login(dados: Login, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == dados.email).first()
 
     if not user:
-        return {"erro": "Usuário não encontrado"}
+        raise HTTPException(status_code=401, detail="Usuário não encontrado")
 
     if not verificar_senha(dados.senha, user.senha_hash):
-        return {"erro": "Senha inválida"}
+        raise HTTPException(status_code=401, detail="Senha inválida")
 
     access_token = criar_token({"sub": user.email})
     refresh_token = criar_refresh_token({"sub": user.email})
@@ -55,13 +57,28 @@ def login(dados: Login, db: Session = Depends(get_db)):
     db.commit()
 
     return {
-        "access_token": access_token,
-        "refresh_token": refresh_token
+    "access_token": access_token,
+    "refresh_token": refresh_token,
+    "token_type": "bearer",
+    "user": {
+        "id": user.id,
+        "nome": user.nome,
+        "email": user.email,
+        "perfil": user.perfil
     }
+}
 
 @router.get("/verify")
 def verify(user = Depends(get_current_user)):
-    return {"msg": "Token válido", "user": user}
+    return {
+    "valid": True,
+    "user": {
+        "id": user.id,
+        "nome": user.nome,
+        "email": user.email,
+        "perfil": user.perfil
+    }
+}
 
 @router.get("/private")
 def private(user = Depends(get_current_user)):
@@ -72,10 +89,10 @@ def refresh(token: str, db: Session = Depends(get_db)):
     db_token = db.query(RefreshToken).filter(RefreshToken.refresh_token == token).first()
 
     if not db_token:
-        return {"erro": "Refresh token inválido"}
+        raise HTTPException(status_code=401, detail="Refresh token inválido")
 
     if db_token.expira_em < datetime.utcnow():
-        return {"erro": "Refresh token expirado"}
+        raise HTTPException(status_code=401, detail="Refresh token expirado")
 
     new_access = criar_token({"sub": "user"})
 
