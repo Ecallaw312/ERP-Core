@@ -194,7 +194,40 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 
 REFRESH_TOKEN_EXPIRE_DAYS=7
 ```
+### 🗄️ Configuração do Banco de Dados
 
+O projeto suporta **dois bancos de dados**:
+
+- **SQLite** → usado para testes e desenvolvimento local  
+- **PostgreSQL** → recomendado para produção
+
+No arquivo `.env`, adicione:
+Para testes e desenvolvimentos:
+```env
+DATABASE_URL=sqlite:///./core.db
+```
+Para Produção:
+```env
+DATABASE_URL=postgresql://usuario:senha@localhost:5432/erp_core
+```
+### ⚙️ Executando Migrações
+### SQLite (testes):
+  
+Windows PowerShell:
+```env
+$env:DATABASE_URL = "sqlite:///./core.db"
+alembic upgrade head
+```
+CMD:
+```env
+set DATABASE_URL=sqlite:///./core.db
+alembic upgrade head
+```
+### PostgreSQL (produção)
+```env
+$env:DATABASE_URL = "postgresql://usuario:senha@localhost:5432/erp_core"
+alembic upgrade head
+```
 ---
 
 ## 6️⃣ Executar aplicação
